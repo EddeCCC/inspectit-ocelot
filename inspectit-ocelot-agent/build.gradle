@@ -47,7 +47,8 @@ dependencies {
         libs.ioOpentelemetryOpentelemetrySdk,
         libs.ioOpentelemetryOpentelemetryOpencensusShim,
         libs.ioOpencensusOpencensusImpl,
-        libs.comGoogleGuava
+        libs.comGoogleGuava,
+        libs.ioOpentelemetryOpentelemetrySemconv
     )
     annotationProcessor libs.orgProjectlombokLombok
     testImplementation (
@@ -82,6 +83,7 @@ docker {
 
 task buildOpenTelemetryFatJar(type: Jar){
     archiveFileName = "opentelemetry-fat.jar"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     destinationDirectory = file("$buildDir/jarGen")
     from{
         configurations.opentelemetry.collect{it.isDirectory() ? it : zipTree(it) }

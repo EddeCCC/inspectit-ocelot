@@ -1,8 +1,8 @@
 package rocks.inspectit.ocelot.core.exporter;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
-import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
+//import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
+//import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -102,11 +102,11 @@ public class JaegerExporterService extends DynamicallyActivatableService {
 
             switch (getProtocol(settings)) {
                 case GRPC: {
-                    spanExporter = JaegerGrpcSpanExporter.builder().setEndpoint(endpoint).build();
+                    //spanExporter = JaegerGrpcSpanExporter.builder().setEndpoint(endpoint).build();
                     break;
                 }
                 case HTTP_THRIFT: {
-                    spanExporter = JaegerThriftSpanExporter.builder().setEndpoint(endpoint).build();
+                    //spanExporter = JaegerThriftSpanExporter.builder().setEndpoint(endpoint).build();
                     break;
                 }
             }
