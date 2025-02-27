@@ -22,7 +22,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.ServiceAttributes;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,7 +90,7 @@ public abstract class ExporterServiceIntegrationTestBase extends SpringTestBase 
 
     static final Resource RESOURCE = Resource.getDefault()
             .toBuilder()
-            .put(ResourceAttributes.SERVICE_NAME, "OTEL integration test")
+            .put(ServiceAttributes.SERVICE_NAME, "OTEL integration test")
             .build();
 
     private static final Logger LOGGER = Logger.getLogger(ExporterServiceIntegrationTestBase.class.getName());
