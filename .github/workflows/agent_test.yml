@@ -51,13 +51,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Clean Gradle cache
-        run: ./gradlew -P${{ steps.determine-jdk.outputs.gradle_property }} clean
+        run: ./gradlew clean
       - name: assemble
-        run: ./gradlew -P${{ steps.determine-jdk.outputs.gradle_property }} :inspectit-ocelot-core:assemble
+        run: ./gradlew :inspectit-ocelot-core:assemble
       - name: test
-        run: ./gradlew -P${{ steps.determine-jdk.outputs.gradle_property }} :inspectit-ocelot-core:test --no-daemon
+        run: ./gradlew :inspectit-ocelot-core:test --no-daemon
       - name: systemTest
-        run: ./gradlew -P${{ steps.determine-jdk.outputs.gradle_property }} :inspectit-ocelot-agent:systemTest
+        run: ./gradlew :inspectit-ocelot-agent:systemTest
       - name: Sanitize image name # we cannot use ':' in upload-artifact names
         run: echo "DOCKER_IMAGE=$(echo '${{ matrix.dockerimage }}' | sed 's/:/-/g')" >> $GITHUB_ENV
       - name: upload agent
