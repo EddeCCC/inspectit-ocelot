@@ -3,7 +3,6 @@ import org.springframework.boot.gradle.plugin.SpringBootPlugin
 plugins {
     alias(libs.plugins.meChampeauJmh)
     id 'maven-publish'
-    id("com.palantir.docker") version "${comPalantirDockerVersion}"
     alias(libs.plugins.orgSpringframeworkBoot) apply false
     alias(libs.plugins.ioSpringDependencyManagement)
 }
@@ -70,20 +69,12 @@ dependencies {
     testRuntimeOnly libs.orgJunitJupiterJunitJupiterEngine
 }
 
+// Copy the jar into the docker folder without version suffix
 task copyAgent(type: Copy) {
     dependsOn jar
-    from(buildDir.toString() + "/inspectit-ocelot-agent-${version}.jar")
-    into(buildDir)
+    from("$buildDir/inspectit-ocelot-agent-${version}.jar")
+    into("$projectDir/docker")
     rename ("inspectit-ocelot-agent-${version}\\.jar", 'inspectit-ocelot-agent.jar')
-}
-
-docker {
-    dependsOn copyAgent
-
-    name "inspectit/inspectit-ocelot-agent"
-    tag 'versioned', "hub.docker.com/${name}:${version}"
-    dockerfile file('docker/Dockerfile')
-    files 'docker/entrypoint.sh', "$buildDir/inspectit-ocelot-agent.jar"
 }
 
 task buildOpenTelemetryFatJar(type: Jar){
@@ -130,6 +121,8 @@ jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+
+
 }
 
 //----------------------------------------------------------------------------------------------------------------------
