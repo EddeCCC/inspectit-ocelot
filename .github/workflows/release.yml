@@ -27,7 +27,7 @@ jobs:
           cp ./inspectit-ocelot-agent/build/inspectit-ocelot-agent-${{ github.ref_name }}.jar ./artifacts
           cp ./components/inspectit-ocelot-configurationserver/build/libs/inspectit-ocelot-configurationserver-${{ github.ref_name }}.jar ./artifacts
       - name: Prepare artifacts for Docker
-        run: /gradlew :inspectit-ocelot-agent:copyAgentJar :inspectit-ocelot-configurationserver:copyServerJar
+        run: ./gradlew :inspectit-ocelot-agent:copyAgentJar :inspectit-ocelot-configurationserver:copyServerJar
       - name: Upload artifacts for Docker
         uses: actions/upload-artifact@v4
         with:
