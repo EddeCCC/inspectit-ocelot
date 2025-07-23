@@ -92,7 +92,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: inspectit-ocelot-agent/docker
-          file: Dockerfile
+          file: inspectit-ocelot-agent/docker/Dockerfile
           platforms: ${{ matrix.platform }}
           outputs: type=image,name=inspectit/inspectit-ocelot-agent,push-by-digest=true,name-canonical=true,push=true
       - name: Export digest agent
@@ -113,7 +113,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: components/inspectit-ocelot-configurationserver/docker
-          file: Dockerfile
+          file: components/inspectit-ocelot-configurationserver/docker/Dockerfile
           platforms: ${{ matrix.platform }}
           outputs: type=image,name=inspectit/inspectit-ocelot-configurationserver,push-by-digest=true,name-canonical=true,push=true
       - name: Export digest configurationserver
