@@ -92,7 +92,7 @@ jobs:
       - name: Upload digest agent
         uses: actions/upload-artifact@v4
         with:
-          name: digests-agent-${{ matrix.platform }}
+          name: digests-agent-${{ env.PLATFORM_PAIR }}
           path: ${{ runner.temp }}/digests-agent/*
           if-no-files-found: error
           retention-days: 1
@@ -114,7 +114,7 @@ jobs:
       - name: Upload digest configurationserver
         uses: actions/upload-artifact@v4
         with:
-          name: digests-configurationserver-${{ matrix.platform }}
+          name: digests-configurationserver-${{ env.PLATFORM_PAIR }}
           path: ${{ runner.temp }}/digests-configurationserver/*
           if-no-files-found: error
           retention-days: 1
