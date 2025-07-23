@@ -47,6 +47,8 @@ jobs:
           - linux/arm/v6
           - linux/arm/v7
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Prepare
         run: |
           platform=${{ matrix.platform }}
@@ -63,6 +65,7 @@ jobs:
 
       - name: Debug
         run: |
+          ls -l
           ls -l inspectit-ocelot-agent
           ls -l inspectit-ocelot-agent/docker
           ls -l components/inspectit-ocelot-configurationserver
