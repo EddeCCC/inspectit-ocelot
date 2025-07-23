@@ -29,7 +29,7 @@ jobs:
       - name: Prepare artifacts for Docker
         run: /gradlew :inspectit-ocelot-agent:copyAgentJar :inspectit-ocelot-configurationserver:copyServerJar
       - name: Upload artifacts for Docker
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-artifacts
           path: |
@@ -68,6 +68,15 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      - name: Download docker artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-artifacts
+          path: ./docker-artifacts
+      - name: Move jars into docker folders
+        run: |
+          mv docker-artifacts/inspectit-ocelot-agent.jar inspectit-ocelot-agent/docker
+          mv docker-artifacts/inspectit-ocelot-configurationserver.jar components/inspectit-ocelot-configurationserver/docker
 
       - name: Debug
         run: |
