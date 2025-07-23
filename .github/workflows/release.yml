@@ -26,9 +26,15 @@ jobs:
           mkdir artifacts
           cp ./inspectit-ocelot-agent/build/inspectit-ocelot-agent-${{ github.ref_name }}.jar ./artifacts
           cp ./components/inspectit-ocelot-configurationserver/build/libs/inspectit-ocelot-configurationserver-${{ github.ref_name }}.jar ./artifacts
-      - name: Prepare docker artifacts
-        run: |
-          ./gradlew :inspectit-ocelot-agent:copyAgentJar :inspectit-ocelot-configurationserver:copyServerJar
+      - name: Prepare artifacts for Docker
+        run: /gradlew :inspectit-ocelot-agent:copyAgentJar :inspectit-ocelot-configurationserver:copyServerJar
+      - name: Upload artifacts for Docker
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-artifacts
+          path: |
+            inspectit-ocelot-agent/docker/inspectit-ocelot-agent.jar
+            components/inspectit-ocelot-configurationserver/docker/inspectit-ocelot-configurationserver.jar
 
   # Build the docker images for multiple platforms and prepare for publishing
   # Check out: https://github.com/docker/build-push-action
@@ -75,8 +81,8 @@ jobs:
         id: build-agent
         uses: docker/build-push-action@v6
         with:
-          context: inspectit-ocelot-agent/docker
-          file: Dockerfile
+          context: .
+          file: inspectit-ocelot-agent/docker/Dockerfile
           platforms: ${{ matrix.platform }}
           outputs: type=image,name=inspectit/inspectit-ocelot-agent,push-by-digest=true,name-canonical=true,push=true
       - name: Export digest agent
@@ -96,8 +102,8 @@ jobs:
         id: build-configurationserver
         uses: docker/build-push-action@v6
         with:
-          context: components/inspectit-ocelot-configurationserver/docker
-          file: Dockerfile
+          context: .
+          file: components/inspectit-ocelot-configurationserver/docker/Dockerfile
           platforms: ${{ matrix.platform }}
           outputs: type=image,name=inspectit/inspectit-ocelot-configurationserver,push-by-digest=true,name-canonical=true,push=true
       - name: Export digest configurationserver
