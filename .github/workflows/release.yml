@@ -147,23 +147,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Docker meta agent
-        id: meta-agent
-        uses: docker/metadata-action@v5
-        with:
-          images: inspectit/inspectit-ocelot-agent
-          tags: |
-            type=ref,event=tag
-            type=raw,value=latest
-      - name: Docker meta configurationserver
-        id: meta-configurationserver
-        uses: docker/metadata-action@v5
-        with:
-          images: inspectit/inspectit-ocelot-configurationserver
-          tags: |
-            type=ref,event=tag
-            type=raw,value=latest
-
       - name: Debug
         run: |
           ls -l
@@ -171,20 +154,34 @@ jobs:
           ls -l ${{ runner.temp }}/digests-agent
           ls -l ${{ runner.temp }}/digests-configurationserver
 
+      - name: Docker meta agent
+        uses: docker/metadata-action@v5
+        with:
+          images: inspectit/inspectit-ocelot-agent
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest
       - name: Push agent
         working-directory: ${{ runner.temp }}/digests-agent
         run: |
-          docker buildx imagetools create ${{ steps.meta-agent.outputs.tags }} \
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
           $(printf 'inspectit/inspectit-ocelot-agent@sha256:%s ' *)
       - name: Inspect manifest agent
         run: |
           docker buildx imagetools inspect inspectit/inspectit-ocelot-agent:${{ github.ref_name }}
 
+      - name: Docker meta configurationserver
+        uses: docker/metadata-action@v5
+        with:
+          images: inspectit/inspectit-ocelot-configurationserver
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest
       - name: Push configurationserver
         working-directory: ${{ runner.temp }}/digests-configurationserver
         run: |
-          docker buildx imagetools create ${{ steps.meta-configurationserver.outputs.tags }} \
-            $(printf 'inspectit/inspectit-ocelot-configurationserver@sha256:%s ' *)
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+          $(printf 'inspectit/inspectit-ocelot-configurationserver@sha256:%s ' *)
       - name: Inspect manifest configurationserver
         run: |
           docker buildx imagetools inspect inspectit/inspectit-ocelot-configurationserver:${{ github.ref_name }}
