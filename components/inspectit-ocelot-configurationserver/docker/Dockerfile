@@ -2,5 +2,4 @@
 FROM amazoncorretto:17-alpine
 
 ADD ./  /
-RUN ls -l
 ENTRYPOINT ["sh", "/entrypoint.sh"]
