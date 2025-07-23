@@ -75,8 +75,9 @@ jobs:
           path: ./docker-artifacts
       - name: Move jars into docker folders
         run: |
-          mv docker-artifacts/inspectit-ocelot-agent.jar inspectit-ocelot-agent/docker
-          mv docker-artifacts/inspectit-ocelot-configurationserver.jar components/inspectit-ocelot-configurationserver/docker
+          ls -l docker-artifacts
+          mv docker-artifacts/inspectit-ocelot-agent/docker/inspectit-ocelot-agent.jar inspectit-ocelot-agent/docker
+          mv docker-artifacts/components/inspectit-ocelot-configurationserver/docker/inspectit-ocelot-configurationserver.jar components/inspectit-ocelot-configurationserver/docker
 
       - name: Debug
         run: |
