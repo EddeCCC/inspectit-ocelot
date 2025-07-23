@@ -22,49 +22,13 @@ jobs:
         run: chmod +x gradlew
       - name: Build artifacts
         run: |
-          ./gradlew assemble bootJarWithFrontend :inspectit-ocelot-core:cyclonedxBom :inspectit-ocelot-configurationserver:cyclonedxBom :inspectit-ocelot-configschemagenerator:generateConfigSchema -PbuildVersion=${{ github.ref_name }}
+          ./gradlew assemble bootJarWithFrontend -PbuildVersion=${{ github.ref_name }}
           mkdir artifacts
           cp ./inspectit-ocelot-agent/build/inspectit-ocelot-agent-${{ github.ref_name }}.jar ./artifacts
           cp ./components/inspectit-ocelot-configurationserver/build/libs/inspectit-ocelot-configurationserver-${{ github.ref_name }}.jar ./artifacts
-          cp ./components/inspectit-ocelot-configschemagenerator/build/inspectit-ocelot-configuration-schema-${{github.ref_name}}.json ./artifacts
-          mkdir boms
-          cp ./inspectit-ocelot-core/build/reports/bom.json ./boms/inspectit-ocelot-agent-bom.json
-          cp ./inspectit-ocelot-core/build/reports/bom.xml ./boms/inspectit-ocelot-agent-bom.xml
-          cp ./components/inspectit-ocelot-configurationserver/build/reports/bom.json ./boms/inspectit-ocelot-configurationserver-bom.json
-          cp ./components/inspectit-ocelot-configurationserver/build/reports/bom.xml ./boms/inspectit-ocelot-configurationserver-bom.xml
-          zip -r ./artifacts/software-bill-of-materials.zip ./boms
       - name: Prepare docker artifacts
-        run: ./gradlew :inspectit-ocelot-agent:copyAgentJar :inspectit-ocelot-configurationserver:copyServerJar
-      - name: Calculate checksums of release artifacts
-        working-directory: ./artifacts
-        run: for f in *; do sha256sum "$f" >> inspectit-ocelot-sha256-checksums.txt; done
-      - name: "Get previous tag"
-        id: previoustag
-        # this gets the tag of the previous release based on the tags in the repo
-        run: echo "tag=$(git ls-remote --tags | cut --delimiter='/' --fields=3  | tail --lines=2 | head  -n -1)" >> $GITHUB_OUTPUT
-      - name: "Build Changelog"
-        id: build_changelog
-        uses: danipaniii/action-github-changelog-generator@v1.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          sinceTag: ${{ steps.previoustag.outputs.tag }}
-          dateFormat:
-          maxIssues: 500
-          unreleased: false
-          author: false
-          headerLabel: "## Changelog"
-          stripGeneratorNotice: true
-      - name: Create Release
-        uses: softprops/action-gh-release@v0.1.14
-        with:
-          tag_name: ${{ github.event.inputs.boomerang-version }}
-          files: artifacts/*
-          generate_release_notes: false
-          token: ${{ github.token }}
-          name: Version ${{ github.ref_name }}
-          body: |
-            "You can also find the corresponding documentation online under the following link: [inspectIT Ocelot Documentation](http://docs.inspectit.rocks)"
-            ${{ steps.build_changelog.outputs.changelog }}
+        run: |
+          ./gradlew :inspectit-ocelot-agent:copyAgentJar :inspectit-ocelot-configurationserver:copyServerJar
 
   # Build the docker images for multiple platforms and prepare for publishing
   # Check out: https://github.com/docker/build-push-action
@@ -83,8 +47,6 @@ jobs:
           - linux/arm/v6
           - linux/arm/v7
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Prepare
         run: |
           platform=${{ matrix.platform }}
@@ -98,6 +60,13 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Debug
+        run: |
+          ls -l inspectit-ocelot-agent
+          ls -l inspectit-ocelot-agent/docker
+          ls -l components/inspectit-ocelot-configurationserver
+          ls -l components/inspectit-ocelot-configurationserver/docker
 
       - name: Build and push agent
         id: build-agent
@@ -206,56 +175,3 @@ jobs:
       - name: Inspect manifest configurationserver
         run: |
           docker buildx imagetools inspect inspectit/inspectit-ocelot-configurationserver:${{ github.ref_name }}
-
-  build_documentation:
-    name: "Build and Publish Release Documentation"
-    runs-on: ubuntu-latest
-    environment: release
-    defaults:
-      run:
-        working-directory: inspectit-ocelot-documentation/website
-    needs: merge_and_publish_docker_images
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          # Uses Personal Access Token of GitHub user NTTechnicalUser.
-          # This stores git credentials for all subsequent steps.
-          # Currently, we only need it for step _Create new Documentation
-          # Version_.
-          # Otherwise, that step is not allowed to push to master, as it is a
-          # protected branch.
-          token: ${{ secrets.RELEASE_USER_TOKEN }}
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: yarn
-          cache-dependency-path: 'inspectit-ocelot-documentation/website/yarn.lock'
-      - name: Replace Variables in Docs
-        working-directory: ./inspectit-ocelot-documentation/docs
-        run: |
-          find . -type f -print0 | xargs -0 sed -i 's/{inspectit-ocelot-version}/'"${{ github.ref_name }}"'/g'
-          OPENTELEMETRY_VERSION=$(grep -oP 'ioOpentelemetry\s*=\s*"\K[^"]+' ../../gradle/libs.versions.toml)
-          find . -type f -print0 | xargs -0 sed -i 's/{opentelemetry-version}/'"${OPENTELEMETRY_VERSION}"'/g'
-      - name: Create new Documentation Version
-        run: |
-          npm install
-          npm run version ${{ github.ref_name }}
-          git add versions.json versioned_docs versioned_sidebars
-          git config --global user.name 'NTTechnicalUser'
-          git config --global user.email 'NTTechnicalUser@users.noreply.github.com'
-          git commit -m "Publish documentation for release ${{ github.ref_name }}"
-          git push -f origin HEAD:master
-      - name: Install Build Dependencies
-        run: yarn install --frozen-lockfile
-      - name: Build Website
-        run: yarn build
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./inspectit-ocelot-documentation/website/build/inspectit-ocelot
-          user_name: NTTechnicalUser
-          user_email: NTTechnicalUser@users.noreply.github.com
-          commit_message: Publish documentation for release ${{ github.ref_name }}
